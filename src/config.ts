@@ -54,6 +54,7 @@ class Config {
 
 	// Preview features.
 	get normaliseWindowsDriveLetters() { return this.getConfig<boolean>("normaliseWindowsDriveLetters"); }
+	get previewHotReloadCoverageMarkers() { return this.getConfig<boolean>("previewHotReloadCoverageMarkers"); }
 
 	public for(uri?: Uri): ResourceConfig {
 		return new ResourceConfig(uri);

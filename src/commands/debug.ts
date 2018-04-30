@@ -77,6 +77,10 @@ export class DebugCommands {
 				this.debugMetrics.text = message;
 				this.debugMetrics.tooltip = "This is the amount of memory being consumed by your applications heaps (out of what has been allocated).\n\nNote: memory usage shown in debug builds may not be indicative of usage in release builds. Use profile builds for more accurate figures when testing memory usage.";
 				this.debugMetrics.show();
+			} else if (e.event === "dart.coverage") {
+				// TODO: Raise an event to pass this back to the decorations class.
+				// TODO: Chekc why we're getting so many arrays full of nulls!
+				console.log(JSON.stringify(e.body));
 			}
 		}));
 		let debugSessionStart: Date;
@@ -154,6 +158,11 @@ export class DebugCommands {
 			this.sendCustomFlutterDebugCommand("hotRestart");
 			analytics.logDebuggerRestart();
 			this.onDidFullRestartEmitter.fire();
+		}));
+		context.subscriptions.push(vs.commands.registerCommand("_dart.updateCoverage", (scriptUris: string[]) => {
+			if (!currentDebugSession)
+				return;
+			this.sendCustomFlutterDebugCommand("updateCoverage", { scriptUris });
 		}));
 
 		context.subscriptions.push(vs.commands.registerCommand("dart.startDebugging", (resource: vs.Uri) => {

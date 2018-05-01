@@ -1,6 +1,7 @@
 import * as vs from "vscode";
 import { DebugCommands } from "../commands/debug";
-import { fsPath } from "../utils";
+import { fsPath, logError } from "../utils";
+import { CoverageData } from "../debug/utils";
 
 export class HotReloadCoverageDecorations implements vs.Disposable {
 	private subscriptions: vs.Disposable[] = [];
@@ -30,6 +31,7 @@ export class HotReloadCoverageDecorations implements vs.Disposable {
 		this.subscriptions.push(debug.onDidFullRestart(() => this.onDidFullRestart()));
 		this.subscriptions.push(vs.debug.onDidStartDebugSession((e) => this.onDidStartDebugSession()));
 		this.subscriptions.push(vs.debug.onDidTerminateDebugSession((e) => this.onDidTerminateDebugSession()));
+		this.subscriptions.push(debug.onReceiveCoverage((c) => this.onReceiveCoverage(c)));
 		// TODO: On execution, remove from notRun list
 		// TODO: If file modified externally, we may need to drop all markers?
 	}
@@ -162,6 +164,25 @@ export class HotReloadCoverageDecorations implements vs.Disposable {
 		// TODO: Don't do on timer!
 		// TODO: Don't do if already in progress?
 		this.coverageUpdateTimer = setTimeout(() => this.requestCoverageUpdate(), 10000);
+	}
+
+	private onReceiveCoverage(coverageData: CoverageData[]): void {
+		for (const data of coverageData) {
+			const fileState = this.fileState[fsPath(data.scriptUri)];
+			if (!fileState)
+				continue;
+
+			// TODO: Here we need to subtract our hits from the fileState.notRun data...
+			for (const hit of data.hits) {
+				fileState.notRun =
+					fileState.notRun
+						.map((r) => {
+							// handle intersections, etc.
+							return r;
+						})
+						.filter((r) => r);
+			}
+		}
 	}
 
 	public dispose() {

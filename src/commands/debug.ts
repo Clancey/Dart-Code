@@ -1,6 +1,6 @@
 import * as vs from "vscode";
 import { Analytics } from "../analytics";
-import { PromiseCompleter } from "../debug/utils";
+import { CoverageData, PromiseCompleter } from "../debug/utils";
 import { SERVICE_EXTENSION_CONTEXT_PREFIX } from "../extension";
 import { fsPath, logError, openInBrowser } from "../utils";
 
@@ -24,6 +24,8 @@ export class DebugCommands {
 	public readonly onDidHotReload: vs.Event<void> = this.onDidHotReloadEmitter.event;
 	private onDidFullRestartEmitter: vs.EventEmitter<void> = new vs.EventEmitter<void>();
 	public readonly onDidFullRestart: vs.Event<void> = this.onDidFullRestartEmitter.event;
+	private onReceiveCoverageEmitter: vs.EventEmitter<CoverageData[]> = new vs.EventEmitter<CoverageData[]>();
+	public readonly onReceiveCoverage: vs.Event<CoverageData[]> = this.onReceiveCoverageEmitter.event;
 
 	constructor(context: vs.ExtensionContext, analytics: Analytics) {
 		this.analytics = analytics;

@@ -133,10 +133,10 @@ export class FlutterDebugSession extends DartDebugSession {
 		response: DebugProtocol.RestartResponse,
 		args: DebugProtocol.RestartArguments,
 	): void {
+		this.sendEvent(new Event("dart.restartRequest"));
 		this.performReload(false);
 		// Notify the Extension we had a restart request so it's able to
 		// log the hotReload.
-		this.sendEvent(new Event("dart.restartRequest"));
 		super.restartRequest(response, args);
 	}
 
@@ -149,6 +149,7 @@ export class FlutterDebugSession extends DartDebugSession {
 		return this.flutter.restart(this.currentRunningAppId, !this.noDebug, hotRestart)
 			.then(
 				(result) => {
+					this.requestCoverageUpdate(hotRestart ? "hot-restart" : "hot-reload");
 					// If we get a hint, send it back over to the UI to do something appropriate.
 					if (result && result.hintId)
 						this.sendEvent(new Event("dart.hint", { hintId: result.hintId, hintMessage: result.hintMessage }));
@@ -199,6 +200,8 @@ export class FlutterDebugSession extends DartDebugSession {
 	public handleExtensionEvent(event: VMEvent) {
 		if (event.kind === "Extension" && event.extensionKind === "Flutter.FirstFrame") {
 			this.sendEvent(new Event("dart.flutter.firstFrame", {}));
+		} else if (event.kind === "Extension" && event.extensionKind === "Flutter.Frame") {
+			this.requestCoverageUpdate("frame");
 		} else {
 			super.handleExtensionEvent(event);
 		}

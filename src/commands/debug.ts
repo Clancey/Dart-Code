@@ -20,10 +20,10 @@ export class DebugCommands {
 	// TODO: Do we need to push these into context?
 	private reloadStatus = vs.window.createStatusBarItem(vs.StatusBarAlignment.Left);
 	private debugMetrics = vs.window.createStatusBarItem(vs.StatusBarAlignment.Right, 0);
-	private onDidHotReloadEmitter: vs.EventEmitter<void> = new vs.EventEmitter<void>();
-	public readonly onDidHotReload: vs.Event<void> = this.onDidHotReloadEmitter.event;
-	private onDidFullRestartEmitter: vs.EventEmitter<void> = new vs.EventEmitter<void>();
-	public readonly onDidFullRestart: vs.Event<void> = this.onDidFullRestartEmitter.event;
+	private onWillHotReloadEmitter: vs.EventEmitter<void> = new vs.EventEmitter<void>();
+	public readonly onWillHotReload: vs.Event<void> = this.onWillHotReloadEmitter.event;
+	private onWillHotRestartEmitter: vs.EventEmitter<void> = new vs.EventEmitter<void>();
+	public readonly onWillHotRestart: vs.Event<void> = this.onWillHotRestartEmitter.event;
 	private onReceiveCoverageEmitter: vs.EventEmitter<CoverageData[]> = new vs.EventEmitter<CoverageData[]>();
 	public readonly onReceiveCoverage: vs.Event<CoverageData[]> = this.onReceiveCoverageEmitter.event;
 
@@ -56,7 +56,7 @@ export class DebugCommands {
 				// in the hotReload command).
 				analytics.logDebuggerHotReload();
 				this.reloadStatus.hide(); // Also remove stale reload status when this happened.
-				this.onDidHotReloadEmitter.fire();
+				this.onWillHotReloadEmitter.fire();
 			} else if (e.event === "dart.hint" && e.body && e.body.hintId) {
 				switch (e.body.hintId) {
 					case "restartRecommended":
@@ -147,22 +147,27 @@ export class DebugCommands {
 			if (!currentDebugSession)
 				return;
 			this.reloadStatus.hide();
+			this.onWillHotReloadEmitter.fire();
 			this.sendCustomFlutterDebugCommand("hotReload");
 			analytics.logDebuggerHotReload();
-			this.onDidHotReloadEmitter.fire();
 		}));
 		context.subscriptions.push(vs.commands.registerCommand("flutter.hotRestart", () => {
 			if (!currentDebugSession)
 				return;
 			this.reloadStatus.hide();
+			this.onWillHotRestartEmitter.fire();
 			this.sendCustomFlutterDebugCommand("hotRestart");
 			analytics.logDebuggerRestart();
-			this.onDidFullRestartEmitter.fire();
 		}));
+<<<<<<< HEAD
 		context.subscriptions.push(vs.commands.registerCommand("_dart.updateCoverage", (scriptUris: string[]) => {
 			if (!currentDebugSession)
+=======
+		context.subscriptions.push(vs.commands.registerCommand("_dart.requestCoverageUpdate", (scriptUris: string[]) => {
+			if (!this.currentDebugSession)
+>>>>>>> Ensure all relevant places request coverage updates
 				return;
-			this.sendCustomFlutterDebugCommand("updateCoverage", { scriptUris });
+			this.sendCustomFlutterDebugCommand("requestCoverageUpdate", { scriptUris });
 		}));
 
 		context.subscriptions.push(vs.commands.registerCommand("dart.startDebugging", (resource: vs.Uri) => {

@@ -165,6 +165,7 @@ export class FlutterDebugSession extends DartDebugSession {
 					this.flutter.callServiceExtension(this.currentRunningAppId, args.type, args.params)
 						// tslint:disable-next-line:no-empty
 						.then((result) => { }, (error) => this.sendEvent(new OutputEvent(error, "stderr")));
+				this.sendResponse(response);
 				break;
 
 			case "togglePlatform":
@@ -177,16 +178,19 @@ export class FlutterDebugSession extends DartDebugSession {
 						},
 						(error) => this.sendEvent(new OutputEvent(error, "stderr")),
 					);
+				this.sendResponse(response);
 				break;
 
 			case "hotReload":
 				if (this.currentRunningAppId)
 					this.performReload(false);
+				this.sendResponse(response);
 				break;
 
 			case "hotRestart":
 				if (this.currentRunningAppId)
 					this.performReload(true);
+				this.sendResponse(response);
 				break;
 
 			default:

@@ -1,6 +1,7 @@
 import * as assert from "assert";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { DebugClient } from "./debug_client_ms";
+import { delay } from "./helpers";
 
 export class DartDebugClient extends DebugClient {
 	public async launch(launchArgs: any): Promise<void> {
@@ -88,5 +89,15 @@ export class DartDebugClient extends DebugClient {
 					reject(new Error(`Didn't find text "${text}" in ${category}`));
 			}
 		}));
+	}
+
+	public async hotReload(): Promise<void> {
+		// If we reload too fast, things fail :-/
+		await delay(500);
+
+		await Promise.all([
+			this.assertOutput("stdout", "Reloaded").then((_) => console.log("got reload text")),
+			this.customRequest("hotReload").then((_) => console.log("reload done!")),
+		]);
 	}
 }

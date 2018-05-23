@@ -1,10 +1,11 @@
+import * as assert from "assert";
 import * as path from "path";
 import * as vs from "vscode";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { fsPath } from "../../../src/utils";
 import { DartDebugClient } from "../../dart_debug_client";
 import { ensureVariable } from "../../debug_helpers";
-import { activate, defer, delay, ext, flutterHelloWorldBrokenFile, flutterHelloWorldFolder, flutterHelloWorldMainFile, getLaunchConfiguration, isWin, openFile, positionOf } from "../../helpers";
+import { activate, defer, delay, ext, flutterHelloWorldBrokenFile, flutterHelloWorldFolder, flutterHelloWorldMainFile, getLaunchConfiguration, helloWorldFolder, isWin, openFile, positionOf } from "../../helpers";
 
 describe("flutter run debugger", () => {
 	beforeEach("skip if no test device", function () {
@@ -145,13 +146,23 @@ describe("flutter run debugger", () => {
 				path: fsPath(flutterHelloWorldMainFile),
 			};
 			await dc.hitBreakpoint(config, expectedLocation);
-			await dc.resume();
+			const stack = await dc.getStack();
+			const frames = stack.body.stackFrames;
+			assert.equal(frames[0].name, "main");
+			assert.equal(frames[0].source.path, expectedLocation.path);
+			assert.equal(frames[0].source.name, path.relative(fsPath(helloWorldFolder), expectedLocation.path));
 
 			// Reload and ensure we hit the breakpoint on each one.
 			for (let i = 0; i < numReloads; i++) {
 				await Promise.all([
-					dc.assertStoppedLocation("breakpoint", expectedLocation),
-					dc.hotReload().then((_) => dc.resume()),
+					dc.assertStoppedLocation("breakpoint", expectedLocation).then(async (_) => {
+						const stack = await dc.getStack();
+						const frames = stack.body.stackFrames;
+						assert.equal(frames[0].name, "main");
+						assert.equal(frames[0].source.path, expectedLocation.path);
+						assert.equal(frames[0].source.name, path.relative(fsPath(helloWorldFolder), expectedLocation.path));
+					}),
+					dc.hotReload(),
 				]);
 			}
 		});

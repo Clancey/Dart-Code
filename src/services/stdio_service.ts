@@ -209,7 +209,7 @@ export abstract class StdIOService<T> implements Disposable {
 			this.logStream = null;
 		}
 
-		if (!this.processExited)
+		if (!this.processExited && this.process && !this.process.killed)
 			this.process.kill();
 	}
 }

@@ -16,6 +16,7 @@ export abstract class StdIOService<T> implements Disposable {
 	private getLogFile: () => string;
 	private logStream: fs.WriteStream;
 	private requestErrorSubscriptions: Array<(notification: any) => void> = [];
+	private processExited = false;
 
 	constructor(getLogFile: () => string, wrappedMessages: boolean = false, treatHandlingErrorsAsUnhandledMessages: boolean = false) {
 		this.currentLogFile = getLogFile();
@@ -43,6 +44,9 @@ export abstract class StdIOService<T> implements Disposable {
 		});
 		this.process.stderr.on("data", (data: Buffer) => {
 			this.logTraffic(`ERR ${data.toString()}`);
+		});
+		this.process.on("exit", (data: Buffer) => {
+			this.processExited = true;
 		});
 	}
 
@@ -205,7 +209,8 @@ export abstract class StdIOService<T> implements Disposable {
 			this.logStream = null;
 		}
 
-		this.process.kill();
+		if (!this.processExited)
+			this.process.kill();
 	}
 }
 

@@ -143,4 +143,8 @@ export class DartDebugClient extends DebugClient {
 	public assertFailingTest(testName: string) {
 		return this.assertTestStatus(testName, "failure");
 	}
+
+	public assertErroringTest(testName: string) {
+		return this.assertTestStatus(testName, "error");
+	}
 }

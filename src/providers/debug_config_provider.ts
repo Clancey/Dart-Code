@@ -7,6 +7,7 @@ import { DebugSession } from "vscode-debugadapter";
 import { Analytics } from "../analytics";
 import { config } from "../config";
 import { DartDebugSession } from "../debug/dart_debug_impl";
+import { DartTestDebugSession } from "../debug/dart_test_debug_impl";
 import { FlutterDebugSession } from "../debug/flutter_debug_impl";
 import { FlutterTestDebugSession } from "../debug/flutter_test_debug_impl";
 import { FlutterLaunchRequestArguments, forceWindowsDriveLetterToUppercase, isWin, isWithinPath } from "../debug/utils";
@@ -95,7 +96,7 @@ export class DebugConfigProvider implements DebugConfigurationProvider {
 		const isTest = debugConfig.program && isTestFile(resolveVariables(debugConfig.program as string));
 		const debugType = isFlutter
 			? (isTest ? DebuggerType.FlutterTest : DebuggerType.Flutter)
-			: DebuggerType.Dart;
+			: (isTest ? DebuggerType.DartTest : DebuggerType.Dart);
 
 		// Ensure we have a device
 		const deviceId = this.deviceManager && this.deviceManager.currentDevice ? this.deviceManager.currentDevice.id : null;
@@ -185,6 +186,8 @@ export class DebugConfigProvider implements DebugConfigurationProvider {
 				return this.spawnOrGetServer("flutterTest", port, () => new FlutterTestDebugSession());
 			case DebuggerType.Dart:
 				return this.spawnOrGetServer("dart", port, () => new DartDebugSession());
+			case DebuggerType.DartTest:
+				return this.spawnOrGetServer("dartTest", port, () => new DartTestDebugSession());
 			default:
 				throw new Error("Unknown debugger type");
 		}
@@ -248,6 +251,7 @@ export class DebugConfigProvider implements DebugConfigurationProvider {
 
 enum DebuggerType {
 	Dart,
+	DartTest,
 	Flutter,
 	FlutterTest,
 }

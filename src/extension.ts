@@ -291,7 +291,7 @@ export function activate(context: vs.ExtensionContext, isRestart: boolean = fals
 	context.subscriptions.push(
 		testTreeProvider,
 		testTreeView,
-		testTreeProvider.onDidStartTests((node) => testTreeView.reveal(node))
+		testTreeProvider.onDidStartTests((node) => testTreeView.reveal(node)),
 	);
 
 	context.subscriptions.push(vs.commands.registerCommand("dart.package.openFile", (filePath) => {

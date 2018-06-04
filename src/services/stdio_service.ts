@@ -141,6 +141,7 @@ export abstract class StdIOService<T> implements Disposable {
 
 	private handleResponse(evt: UnknownResponse) {
 		const handler = this.activeRequests[evt.id];
+		delete this.activeRequests[evt.id];
 		const method: string = handler[2];
 		const error = evt.error;
 

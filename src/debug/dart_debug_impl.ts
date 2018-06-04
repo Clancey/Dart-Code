@@ -332,8 +332,7 @@ export class DartDebugSession extends DebugSession {
 			}
 		} catch (e) {
 			return this.errorResponse(response, `${e}`);
-		}
-		finally {
+		} finally {
 			this.threadManager.removeAllStoredData();
 		}
 		super.disconnectRequest(response, args);

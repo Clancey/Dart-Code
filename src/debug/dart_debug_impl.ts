@@ -889,8 +889,12 @@ export class DartDebugSession extends DebugSession {
 							.replace(/(^|[^\\\$]){/g, "$1\${") // Prefix any {tokens} with $ if they don't have
 							.replace(/\\({)/g, "$1"); // Remove slashes
 						// TODO: Escape triple quotes?
-						const printCommand = `print("""${logMessage}""")`;
-						await this.evaluateAndSendErrors(thread, printCommand);
+						const logMessageAsString = `"""${logMessage}"""`;
+						const res = await this.evaluateAndSendErrors(thread, logMessageAsString);
+						if (res) {
+							const stringRes = await this.callToString(thread.ref, res, true);
+							this.sendEvent(new OutputEvent(stringRes, "stdout"));
+						}
 					}
 				}
 			} else if (kind === "PauseBreakpoint") {
